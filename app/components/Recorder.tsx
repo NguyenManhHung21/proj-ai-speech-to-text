@@ -33,8 +33,8 @@ function Recorder({ uploadAudio }: Props) {
         });
         setPermission(true);
         setStream(streamData);
-      } catch (error: any) {
-        alert(error.message);
+      } catch (error) {
+        console.log(error);
       }
     } else {
       alert("The MediaRecorder API is not supported in your browser.");

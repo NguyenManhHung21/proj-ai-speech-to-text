@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Messages from "./components/Messages";
 import Recorder, { mimeType } from "./components/Recorder";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormState } from "react-dom";
 import transcript from "@/actions/transcript";
 

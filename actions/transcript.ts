@@ -65,40 +65,47 @@ const transcript = async (preState: any, formData: FormData) => {
   console.log("== Transcribe Audio Sample ==");
 
   const client = getClient();
-  const result = await client.audio.transcriptions.create(
-    {
-      file,
-      model: "whisper-1",
-    },
-    { timeout: 5000 }
-  );
+  try {
+    const result = await client.audio.transcriptions.create(
+      {
+        file,
+        model: "whisper-1",
+      },
+      { timeout: 5000 }
+    );
 
-  // ---    get chat completion from Azure OpenAI   ---
-  const messages: ChatCompletionMessageParam[] = [
-    {
-      role: "system",
-      content:
-        "You are a helpful assistant. You will answer questions and reply I cannot answer that if you do not know the answer.",
-    },
-    {
-      role: "user",
-      content: result.text,
-    },
-  ];
-  const clientCompletion = getClientCompletion();
-  const completions = await clientCompletion.chat.completions.create({
-    // stream: true,
-    model: "gpt-3.5-turbo-0613",
-    messages,
-    max_tokens: 128,
-  });
-  const response = completions.choices[0].message.content;
-
-  return {
-    sender: result.text,
-    response,
-    id,
-  };
+    // ---    get chat completion from Azure OpenAI   ---
+    const messages: ChatCompletionMessageParam[] = [
+      {
+        role: "system",
+        content:
+          "You are a helpful assistant. You will answer questions and reply I cannot answer that if you do not know the answer.",
+      },
+      {
+        role: "user",
+        content: result.text,
+      },
+    ];
+    const clientCompletion = getClientCompletion();
+    const completions = await clientCompletion.chat.completions.create({
+      // stream: true,
+      model: "gpt-3.5-turbo-0613",
+      messages,
+      max_tokens: 128,
+    });
+    const response = completions.choices[0].message.content;
+    return {
+      sender: result.text,
+      response,
+      id,
+    };
+  } catch (error) {
+    return {
+      sender: "",
+      response: "",
+      id,
+    };
+  }
 };
 
 export default transcript;
