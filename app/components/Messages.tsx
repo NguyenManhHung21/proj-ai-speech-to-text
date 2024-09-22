@@ -9,7 +9,7 @@ type Props = {
 
 function Messages({ messages }: Props) {
   return (
-    <div className="flex flex-col h-[calc(100vh-160px)] mobile:px-36 tablet:px-96 pc:px-[500px] overflow-auto p-10">
+    <div className="flex flex-col h-[calc(100vh-160px)] mobile:px-36 tablet:px-96 pc:px-[500px] overflow-auto pt-20 pb-10 px-10 mobile:p-10">
       <LoadingMessage />
       {!messages.length && (
         <div className="flex flex-col gap-10 flex-1 items-center justify-end ">
