@@ -42,17 +42,21 @@ function Recorder({ uploadAudio }: Props) {
   };
 
   const startRecording = async () => {
-    if (stream === null || pending) return;
+    if (mediaRecorder === null || stream === null) return;
+
+    if (pending) return;
+
     setRecordingStatus("recording");
 
     // Create a new media recorder instance using the stream
     const media = new MediaRecorder(stream, { mimeType }); // need explain
+    //set the MediaRecorder instance to the mediaRecorder ref
     mediaRecorder.current = media;
+    //invokes the start method to start the recording process
     mediaRecorder.current.start();
 
     const localAudioChunks: Blob[] = [];
     mediaRecorder.current.ondataavailable = (event) => {
-      console.log("data:", event.data);
       if (typeof event.data === "undefined") return;
       if (event.data.size === 0) return;
 
@@ -67,13 +71,15 @@ function Recorder({ uploadAudio }: Props) {
     setRecordingStatus("inactive");
     mediaRecorder.current.stop();
     mediaRecorder.current.onstop = () => {
+      //creates a blob file from the audiochunks data
       const audioBlob = new Blob(audioChunks, { type: mimeType });
+      //creates a playable URL from the blob file.
+
       uploadAudio(audioBlob);
       setAudioChunks([]);
     };
   };
 
-  console.log({ pending, permission, recordingStatus });
   return (
     <div className="flex items-center justify-center text-white">
       {!permission && (
