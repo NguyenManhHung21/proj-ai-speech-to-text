@@ -89,7 +89,7 @@ const transcript = async (preState: any, formData: FormData) => {
     const clientCompletion = getClientCompletion();
     const completions = await clientCompletion.chat.completions.create({
       // stream: true,
-      model: "gpt-3.5-turbo-0613",
+      model: "gpt-4o-2024-08-06",
       messages,
       max_tokens: 128,
     });

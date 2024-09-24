@@ -11,7 +11,8 @@ const config: Config = {
     extend: {
       screens: {
         mobile: "768px",
-        tablet: "1440px",
+        tablet: "1024px",
+        extra_tablet: "1440px",
         pc: "2080px",
       },
       colors: {
