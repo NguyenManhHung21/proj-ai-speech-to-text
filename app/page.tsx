@@ -7,13 +7,13 @@ import { useFormState } from "react-dom";
 import transcript from "@/actions/transcript";
 
 const initialState = {
-  sender: "",
+  sender: null,
   response: "",
   id: "",
 };
 
 export type Message = {
-  sender: string;
+  sender: string | null;
   response: string;
   id: string;
 };
@@ -25,10 +25,10 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    if (state.response && state.sender) {
+    if (state.response && state.id) {
       setMessages((messages) => [
         {
-          sender: state.sender || "",
+          sender: state.sender,
           response: state.response || "",
           id: state.id || "",
         },

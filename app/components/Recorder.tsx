@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import activeSiri from "@/app/img/active.gif";
 import inactiveSiri from "@/app/img/inactive.png";
 import { useFormStatus } from "react-dom";
+import { toast } from "react-toastify";
 
 type Props = {
   uploadAudio: (blob: Blob) => void;
@@ -15,14 +16,10 @@ export const mimeType = "audio/webm";
 function Recorder({ uploadAudio }: Props) {
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const { pending } = useFormStatus();
-  const [permission, setPermission] = useState(false);
+  const [permission, setPermission] = useState<boolean | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [recordingStatus, setRecordingStatus] = useState("inactive");
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
-
-  useEffect(() => {
-    getMicrophonePermission();
-  }, []);
 
   const getMicrophonePermission = async () => {
     if ("MediaRecorder" in window) {
@@ -35,10 +32,34 @@ function Recorder({ uploadAudio }: Props) {
         setStream(streamData);
       } catch (error) {
         console.log(error);
+        toast.error("Permission denied", { toastId: "permission-deny-id" });
+        return setPermission(false);
       }
     } else {
       alert("The MediaRecorder API is not supported in your browser.");
     }
+  };
+
+  useEffect(() => {
+    getMicrophonePermission();
+  }, []);
+
+  const checkForSpeech = async (audioBlob: Blob): Promise<boolean> => {
+    const audioContext = new AudioContext();
+    const arrayBuffer = await audioBlob.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+    const channelData = audioBuffer.getChannelData(0);
+
+    let total = 0;
+
+    for (let i = 0; i < channelData.length; i++) {
+      total += Math.abs(channelData[i]);
+    }
+
+    const averageVolume = total / channelData.length;
+
+    return averageVolume > 0.01;
   };
 
   const startRecording = async () => {
@@ -49,7 +70,7 @@ function Recorder({ uploadAudio }: Props) {
     setRecordingStatus("recording");
 
     // Create a new media recorder instance using the stream
-    const media = new MediaRecorder(stream, { mimeType }); // need explain
+    const media = new MediaRecorder(stream, { mimeType });
     //set the MediaRecorder instance to the mediaRecorder ref
     mediaRecorder.current = media;
     //invokes the start method to start the recording process
@@ -58,7 +79,7 @@ function Recorder({ uploadAudio }: Props) {
     const localAudioChunks: Blob[] = [];
     mediaRecorder.current.ondataavailable = (event) => {
       if (typeof event.data === "undefined") return;
-      if (event.data.size === 0) return;
+      if (event.data.size === 0) return "say nothing!";
 
       localAudioChunks.push(event.data);
     };
@@ -70,10 +91,14 @@ function Recorder({ uploadAudio }: Props) {
 
     setRecordingStatus("inactive");
     mediaRecorder.current.stop();
-    mediaRecorder.current.onstop = () => {
+    mediaRecorder.current.onstop = async () => {
       //creates a blob file from the audiochunks data
-      const audioBlob = new Blob(audioChunks, { type: mimeType });
-      //creates a playable URL from the blob file.
+      let audioBlob = new Blob(audioChunks, { type: mimeType });
+
+      const hasSpeech = await checkForSpeech(audioBlob);
+      if (!hasSpeech) {
+        audioBlob = new Blob([], { type: mimeType });
+      }
 
       uploadAudio(audioBlob);
       setAudioChunks([]);
@@ -82,10 +107,13 @@ function Recorder({ uploadAudio }: Props) {
 
   return (
     <div className="flex items-center justify-center text-white">
-      {!permission && (
-        <button onClick={getMicrophonePermission}>Get Microphone</button>
-      )}
-      {pending && (
+      {permission === false ? (
+        <button onClick={getMicrophonePermission} type="button">
+          Get Microphone
+        </button>
+      ) : null}
+
+      {permission && pending && (
         <Image
           src={activeSiri}
           width={350}
@@ -96,7 +124,7 @@ function Recorder({ uploadAudio }: Props) {
         />
       )}
 
-      {permission && recordingStatus === "inactive" && !pending && (
+      {permission && recordingStatus === "inactive" && !pending ? (
         <Image
           src={inactiveSiri}
           width={350}
@@ -106,9 +134,9 @@ function Recorder({ uploadAudio }: Props) {
           priority={true}
           className="assistant cursor-pointer hover:scale-110 duration-150 transition-all ease-in-out"
         />
-      )}
+      ) : null}
 
-      {recordingStatus === "recording" && (
+      {recordingStatus === "recording" ? (
         <Image
           src={activeSiri}
           width={350}
@@ -118,7 +146,7 @@ function Recorder({ uploadAudio }: Props) {
           priority={true}
           className="assistant cursor-pointer hover:scale-110 duration-150 transition-all ease-in-out"
         />
-      )}
+      ) : null}
     </div>
   );
 }

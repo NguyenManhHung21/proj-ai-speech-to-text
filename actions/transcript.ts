@@ -52,13 +52,16 @@ const transcript = async (preState: any, formData: FormData) => {
     return {
       sender: "",
       response: "Azure credentials not set!",
+      id,
     };
   }
   const file = formData.get("audio") as File;
   if (file.size === 0) {
     return {
-      sender: "",
-      response: "No audio file provided",
+      sender: null,
+      response:
+        "Sorry, I can't hear what you're saying, please say something, I will help you! ",
+      id,
     };
   }
 
@@ -66,20 +69,26 @@ const transcript = async (preState: any, formData: FormData) => {
 
   const client = getClient();
   try {
-    const result = await client.audio.transcriptions.create(
-      {
-        file,
-        model: "whisper-1",
-      },
-      { timeout: 5000 }
-    );
+    const result = await client.audio.transcriptions
+      .create(
+        {
+          file,
+          model: "whisper-1",
+          temperature: 0,
+        },
+        { timeout: 10000 }
+      )
+      .catch((error) => {
+        console.log(error);
+        return error;
+      });
 
     // ---    get chat completion from Azure OpenAI   ---
     const messages: ChatCompletionMessageParam[] = [
       {
         role: "system",
         content:
-          "You are a helpful assistant. You will answer questions and reply I cannot answer that if you do not know the answer.",
+          "You are a helpful assistant. You will answer questions and reply 'Sorry, I don't understand what you just said, please say something!' if you do not know the answer.",
       },
       {
         role: "user",
@@ -87,12 +96,15 @@ const transcript = async (preState: any, formData: FormData) => {
       },
     ];
     const clientCompletion = getClientCompletion();
-    const completions = await clientCompletion.chat.completions.create({
-      // stream: true,
-      model: "gpt-4o-2024-08-06",
-      messages,
-      max_tokens: 128,
-    });
+    const completions = await clientCompletion.chat.completions.create(
+      {
+        // stream: true,
+        model: "gpt-4o-2024-08-06",
+        messages,
+        max_tokens: 128,
+      },
+      { timeout: 10000 }
+    );
     const response = completions.choices[0].message.content;
     return {
       sender: result.text,
@@ -101,8 +113,8 @@ const transcript = async (preState: any, formData: FormData) => {
     };
   } catch (error) {
     return {
-      sender: "",
-      response: "",
+      sender: null,
+      response: "Sorry, something went wrong, please try again!",
       id,
     };
   }
