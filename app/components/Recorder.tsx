@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
-import activeSiri from "@/app/img/active.gif";
-import inactiveSiri from "@/app/img/inactive.png";
+import micro from "@/app/img/micro.gif";
+import inactiveMicro from "@/app/img/inactive-micro.gif";
+import loading from "@/app/img/loading.gif";
 import { useFormStatus } from "react-dom";
 import { toast } from "react-toastify";
 
@@ -115,33 +116,33 @@ function Recorder({ uploadAudio }: Props) {
 
       {permission && pending && (
         <Image
-          src={activeSiri}
+          src={loading}
           width={350}
           height={350}
           alt="Recording"
           priority
-          className="assistant grayscale"
+          className="assistant"
         />
       )}
 
       {permission && recordingStatus === "inactive" && !pending ? (
         <Image
-          src={inactiveSiri}
+          src={inactiveMicro}
           width={350}
           height={350}
           alt="Not Recording"
           onClick={startRecording}
           priority={true}
-          className="assistant cursor-pointer hover:scale-110 duration-150 transition-all ease-in-out"
+          className="assistant cursor-pointer hover:scale-110 duration-150 transition-all ease-in-out "
         />
       ) : null}
 
       {recordingStatus === "recording" ? (
         <Image
-          src={activeSiri}
+          src={micro}
           width={350}
           height={350}
-          alt="Recording"
+          alt=""
           onClick={stopRecording}
           priority={true}
           className="assistant cursor-pointer hover:scale-110 duration-150 transition-all ease-in-out"

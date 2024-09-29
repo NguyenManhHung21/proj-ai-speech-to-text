@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
 const config: Config = {
   darkMode: ["class"],
@@ -57,6 +58,16 @@ const config: Config = {
           "5": "hsl(var(--chart-5))",
         },
       },
+      textColor: {
+        "gradient-text": "linear-gradient(180deg, #3080e8, #cb5eee)",
+      },
+      backgroundImage: {
+        "custom-linear-page":
+          "linear-gradient(104.1deg, #303d89 26.4%, #4c266e 67.8%)",
+        "custom-linear-nav":
+          "linear-gradient(206.1deg, #272b6a 37.5%, #13152e 83.6%);",
+        "gradient-text": "linear-gradient(180deg, #3080e8, #cb5eee)",
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -64,6 +75,15 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    plugin(function ({ addUtilities }) {
+      addUtilities({
+        ".hidden-scroll::-webkit-scrollbar": {
+          display: "none",
+        },
+      });
+    }),
+  ],
 };
 export default config;

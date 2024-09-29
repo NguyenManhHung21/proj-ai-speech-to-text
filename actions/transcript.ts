@@ -51,7 +51,7 @@ const transcript = async (preState: any, formData: FormData) => {
     console.error("Azure credentials not set!");
     return {
       sender: "",
-      response: "Azure credentials not set!",
+      systemResponse: "Azure credentials not set!",
       id,
     };
   }
@@ -59,7 +59,7 @@ const transcript = async (preState: any, formData: FormData) => {
   if (file.size === 0) {
     return {
       sender: null,
-      response:
+      systemResponse:
         "Sorry, I can't hear what you're saying, please say something, I will help you! ",
       id,
     };
@@ -105,16 +105,16 @@ const transcript = async (preState: any, formData: FormData) => {
       },
       { timeout: 10000 }
     );
-    const response = completions.choices[0].message.content;
+    const systemResponse = completions.choices[0].message.content;
     return {
       sender: result.text,
-      response,
+      systemResponse,
       id,
     };
   } catch (error) {
     return {
       sender: null,
-      response: "Sorry, something went wrong, please try again!",
+      systemResponse: "Sorry, something went wrong, please try again!",
       id,
     };
   }

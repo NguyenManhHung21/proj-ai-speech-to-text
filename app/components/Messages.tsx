@@ -1,5 +1,6 @@
+"use client";
+
 import React from "react";
-import { Message } from "../page";
 import { ChevronDownCircle } from "lucide-react";
 import LoadingMessage from "./LoadingMessage";
 
@@ -9,7 +10,7 @@ type Props = {
 
 function Messages({ messages }: Props) {
   return (
-    <div className="flex flex-col h-[calc(100vh-160px)] mobile:px-36 tablet:px-64 extra_tablet:px-[380px] pc:px-[500px] overflow-auto pt-20 pb-20 px-5 mobile:p-10">
+    <div className="flex flex-col h-[calc(100vh-160px)] py-10 px-64 overflow-auto hidden-scroll">
       <LoadingMessage />
       {!messages.length && (
         <>
@@ -34,7 +35,7 @@ function Messages({ messages }: Props) {
             </div>
             <div>
               <p className="message bg-gray-800 rounded-bl-none">
-                {message.response}
+                {message.systemResponse}
               </p>
             </div>
           </div>
