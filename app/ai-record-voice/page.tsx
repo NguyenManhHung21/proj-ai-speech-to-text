@@ -24,13 +24,13 @@ export default function AIRecord() {
     "new-msg",
     (url: string, { arg }: { arg: InputNewMessage }) => createMessage(arg),
     {
-      onSuccess(data, key, config) {
+      onSuccess() {
         recallConversations();
       },
     }
   );
 
-  const { data, trigger: recallConversations } = useSWRMutation(
+  const { trigger: recallConversations } = useSWRMutation(
     "all-conversation",
     () => getAllConversation()
   );
@@ -49,7 +49,7 @@ export default function AIRecord() {
     if (!!state.systemResponse && !!state.sender) {
       trigger({ conversationId: null, message: state });
     }
-  }, [state]);
+  }, [state, trigger]);
 
   const uploadAudio = (blob: Blob) => {
     const file = new File([blob], "audio.webm", { type: mimeType }); // need explain

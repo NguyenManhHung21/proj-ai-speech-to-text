@@ -8,7 +8,6 @@ import Messages from "@/app/components/Messages";
 import { useParams } from "next/navigation";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
-import useSWR from "swr";
 import { getConversation } from "@/app/api/conversation";
 import { createMessage } from "@/app/api/message";
 
@@ -25,15 +24,14 @@ export default function RecordWithId() {
   const [messages, setMessages] = useState<Message[]>([]);
   const { id } = useParams();
 
-  const { data, isLoading } = useSWRImmutable(
+  const { data } = useSWRImmutable(
     ["conversation", id],
     () => {
       if (typeof id === "string") return getConversation(id);
     },
     {
-      onSuccess(data, key, config) {
+      onSuccess(data) {
         if (data) {
-          console.log({ data });
           setMessages(data);
         }
       },
@@ -63,7 +61,7 @@ export default function RecordWithId() {
     if (typeof id === "string" && !!state.systemResponse && !!state.sender) {
       trigger({ conversationId: id, message: state });
     }
-  }, [state]);
+  }, [state, id, trigger]);
 
   const uploadAudio = (blob: Blob) => {
     const file = new File([blob], "audio.webm", { type: mimeType }); // need explain

@@ -10,8 +10,10 @@ import { usePathname } from "next/navigation";
 import { Accordion, AccordionItem, Button, cn } from "@nextui-org/react";
 import useSWRImmutable from "swr/immutable";
 import { getAllConversation } from "../api/message";
-import { PencilIcon, VoicemailIcon } from "lucide-react";
-type Props = {};
+import { PencilIcon, Trash } from "lucide-react";
+import useSWRMutation from "swr/mutation";
+import { deleteConversation } from "../api/conversation";
+import { toast } from "react-toastify";
 
 export const menuBar: MenuItem[] = [
   {
@@ -46,12 +48,23 @@ export const menuBar: MenuItem[] = [
   },
 ];
 
-const Sidebar = (props: Props) => {
+const Sidebar = () => {
   const [isExpand, setIsExpand] = useState(true);
   const pathname = usePathname();
 
-  const { data, isLoading } = useSWRImmutable("all-conversation", () =>
+  const { data, mutate } = useSWRImmutable("all-conversation", () =>
     getAllConversation()
+  );
+
+  const { trigger } = useSWRMutation(
+    "delete-conversation",
+    (url: string, { arg }: { arg: number }) => deleteConversation(arg),
+    {
+      onSuccess() {
+        mutate();
+        toast.success(`You just delete a conversation successfully!`);
+      },
+    }
   );
 
   const renderMenu = () => {
@@ -105,17 +118,28 @@ const Sidebar = (props: Props) => {
             {item.freTier &&
               !!data &&
               data.map((child) => (
-                <Link
-                  href={`${item.link}/${child.conversationId}`}
-                  className={cn(
-                    "p-3 text-base text-white hover:bg-[#303D89] rounded-xl truncate",
-                    pathname.endsWith(String(child.conversationId)) &&
-                      "bg-[#303D89]"
-                  )}
+                <div
+                  className={cn("group relative")}
                   key={child.conversationId}
                 >
-                  {child.sender}
-                </Link>
+                  <Link
+                    href={`${item.link}/${child.conversationId}`}
+                    className={cn(
+                      "p-3 text-base text-white truncate hover:bg-[#303D89] rounded-xl block",
+                      pathname.endsWith(String(child.conversationId)) &&
+                        "bg-[#303D89]"
+                    )}
+                  >
+                    {child.sender}
+                  </Link>
+                  <Button
+                    isIconOnly
+                    className="absolute right-4 top-[50%] translate-y-[-50%] hidden group-hover:block"
+                    onPress={() => trigger(child.conversationId)}
+                  >
+                    <Trash color="white" width={17} />
+                  </Button>
+                </div>
               ))}
           </AccordionItem>
         </Accordion>
@@ -123,7 +147,7 @@ const Sidebar = (props: Props) => {
     });
   };
   return (
-    <div className=" ">
+    <div>
       <div
         className={clsx(
           "relative h-screen overflow-auto max-w-[300px] bg-custom-linear-nav p-4 pt-6 shadow-lg shadow-indigo-500/50 duration-300",

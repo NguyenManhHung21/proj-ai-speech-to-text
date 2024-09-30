@@ -27,7 +27,7 @@ type MessageResponse = {
 type InputNewMessage = {
   conversationId: string | null;
   message: {
-    sender: any;
+    sender: string;
     systemResponse: string | null;
     id: string;
   };
