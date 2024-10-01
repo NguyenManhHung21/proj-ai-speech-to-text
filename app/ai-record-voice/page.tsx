@@ -7,6 +7,7 @@ import Recorder, { mimeType } from "../components/Recorder";
 import Messages from "../components/Messages";
 import { createMessage, getAllConversation } from "../api/message";
 import useSWRMutation from "swr/mutation";
+import { usePathname } from "next/navigation";
 
 const initialState = {
   sender: null,
@@ -19,13 +20,22 @@ export default function AIRecord() {
   const submitButtonRef = useRef<HTMLButtonElement | null>(null);
   const [state, formAction] = useFormState(transcript, initialState);
   const [messages, setMessages] = useState<Message[]>([]);
-
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const pathname = usePathname();
   const { trigger } = useSWRMutation(
     "new-msg",
     (url: string, { arg }: { arg: InputNewMessage }) => createMessage(arg),
     {
-      onSuccess() {
+      onSuccess(data) {
         recallConversations();
+        if (!conversationId) {
+          setConversationId(data.conversationId);
+          window.history.replaceState(
+            null,
+            "",
+            `${pathname}/${data.conversationId}`
+          );
+        }
       },
     }
   );
@@ -47,7 +57,7 @@ export default function AIRecord() {
       ]);
     }
     if (!!state.systemResponse && !!state.sender) {
-      trigger({ conversationId: null, message: state });
+      trigger({ conversationId: conversationId, message: state });
     }
   }, [state, trigger]);
 
